@@ -1,6 +1,7 @@
 node_modules
 .next
 out
+*.tsbuildinfo
 .env.local
 .env*.local
 npm-debug.log*
@@ -8,3 +9,4 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 coverage
+project_reqiur
