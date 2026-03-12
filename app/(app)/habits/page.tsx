@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatISO } from "date-fns";
 import { toast } from "sonner";
 
@@ -22,7 +22,7 @@ export default function HabitsPage() {
   const [category, setCategory] = useState("other");
   const [saving, setSaving] = useState(false);
 
-  const hydrate = async () => {
+  const hydrate = useCallback(async () => {
     if (!hasSupabaseEnv) {
       return;
     }
@@ -40,9 +40,9 @@ export default function HabitsPage() {
     if (logResponse.data) {
       setLogs(logResponse.data as typeof demoHabitLogs);
     }
-  };
+  }, []);
 
-  const ensureTodayLogs = async (habitData = habits) => {
+  const ensureTodayLogs = useCallback(async (habitData = habits) => {
     if (!hasSupabaseEnv || !habitData.length) {
       return;
     }
@@ -50,14 +50,14 @@ export default function HabitsPage() {
     const supabase = createClient();
     const payload = habitData.map((habit) => ({ habit_id: habit.id, date: today, completed: false }));
     await supabase.from("habit_logs").upsert(payload, { onConflict: "habit_id,date", ignoreDuplicates: true });
-  };
+  }, [habits]);
 
   useEffect(() => {
     void (async () => {
       await ensureTodayLogs();
       await hydrate();
     })();
-  }, []);
+  }, [ensureTodayLogs, hydrate]);
 
   const rows = useMemo(
     () =>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameMonth, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
@@ -33,7 +33,7 @@ export default function CalendarPage() {
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(false);
 
-  const loadEvents = async (targetMonth = month) => {
+  const loadEvents = useCallback(async (targetMonth = month) => {
     setLoading(true);
 
     try {
@@ -70,11 +70,11 @@ export default function CalendarPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [month]);
 
   useEffect(() => {
     void loadEvents(month);
-  }, [month]);
+  }, [loadEvents, month]);
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
