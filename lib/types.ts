@@ -3,6 +3,26 @@ export type WorkStatus = "pending" | "in-progress" | "completed";
 export type WorkType = "project" | "task" | "deadline";
 export type TransactionType = "income" | "expense";
 
+export type WorkChecklistItem = {
+  id: string;
+  label: string;
+  done: boolean;
+};
+
+export type Subject = {
+  id: string;
+  workspace_id: string;
+  name: string;
+  code: string;
+  focus: "major" | "support" | "life";
+  color: string;
+  notes_count: number;
+  homework_total: number;
+  homework_completed: number;
+  description: string | null;
+  created_at: string;
+};
+
 export type WorkItem = {
   id: string;
   workspace_id: string;
@@ -14,8 +34,12 @@ export type WorkItem = {
   due_date: string | null;
   created_at: string;
   subject?: string | null;
+  subject_id?: string | null;
   link?: string | null;
   start_date?: string | null;
+  notes?: string | null;
+  tags?: string[];
+  checklist?: WorkChecklistItem[];
 };
 
 export type Habit = {

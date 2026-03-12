@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, ChartNoAxesCombined, CircleDollarSign, LayoutDashboard, ListChecks, UserCircle2 } from "lucide-react";
+import { BookOpenText, CalendarDays, ChartNoAxesCombined, CircleDollarSign, LayoutDashboard, ListChecks, UserCircle2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/subjects", label: "Subjects", icon: BookOpenText },
   { href: "/habits", label: "Habit Tracking", icon: ListChecks },
   { href: "/work", label: "Work", icon: ChartNoAxesCombined },
   { href: "/finance", label: "Finance", icon: CircleDollarSign },

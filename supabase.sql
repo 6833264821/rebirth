@@ -58,16 +58,49 @@ create table if not exists public.work_items (
   workspace_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
   name text not null,
   subject text,
+  subject_id uuid,
   link text,
   priority text not null check (priority in ('low', 'medium', 'high')) default 'medium',
   type text not null check (type in ('project', 'task', 'deadline')) default 'task',
   status text not null check (status in ('pending', 'in-progress', 'completed')) default 'pending',
   details text,
+  notes text,
+  tags text[] not null default '{}',
+  checklist jsonb not null default '[]'::jsonb,
   start_date date,
   due_date date,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create table if not exists public.subjects (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  name text not null,
+  code text not null,
+  focus text not null check (focus in ('major', 'support', 'life')) default 'major',
+  color text not null default 'bg-sky-500',
+  notes_count integer not null default 0,
+  homework_total integer not null default 0,
+  homework_completed integer not null default 0,
+  description text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (workspace_id, code)
+);
+
+alter table public.work_items
+  add column if not exists subject_id uuid,
+  add column if not exists notes text,
+  add column if not exists tags text[] not null default '{}',
+  add column if not exists checklist jsonb not null default '[]'::jsonb;
+
+alter table public.work_items
+  drop constraint if exists work_items_subject_id_fkey;
+
+alter table public.work_items
+  add constraint work_items_subject_id_fkey
+  foreign key (subject_id) references public.subjects(id) on delete set null;
 
 create table if not exists public.habits (
   id uuid primary key default gen_random_uuid(),
@@ -144,6 +177,8 @@ create table if not exists public.notification_preferences (
 
 create index if not exists idx_work_items_workspace_id on public.work_items(workspace_id);
 create index if not exists idx_work_items_due_date on public.work_items(due_date);
+create index if not exists idx_work_items_subject_id on public.work_items(subject_id);
+create index if not exists idx_subjects_workspace_id on public.subjects(workspace_id);
 create index if not exists idx_habits_workspace_id on public.habits(workspace_id);
 create index if not exists idx_habit_logs_habit_id_date on public.habit_logs(habit_id, date desc);
 create index if not exists idx_transactions_workspace_id_date on public.transactions(workspace_id, date desc);
@@ -159,6 +194,11 @@ for each row execute procedure public.set_updated_at();
 drop trigger if exists work_items_set_updated_at on public.work_items;
 create trigger work_items_set_updated_at
 before update on public.work_items
+for each row execute procedure public.set_updated_at();
+
+drop trigger if exists subjects_set_updated_at on public.subjects;
+create trigger subjects_set_updated_at
+before update on public.subjects
 for each row execute procedure public.set_updated_at();
 
 drop trigger if exists habits_set_updated_at on public.habits;
@@ -183,6 +223,7 @@ for each row execute procedure public.set_updated_at();
 
 alter table public.profiles enable row level security;
 alter table public.work_items enable row level security;
+alter table public.subjects enable row level security;
 alter table public.habits enable row level security;
 alter table public.habit_logs enable row level security;
 alter table public.transactions enable row level security;
@@ -205,6 +246,15 @@ create policy work_items_select on public.work_items for select using (workspace
 create policy work_items_insert on public.work_items for insert with check (workspace_id = auth.uid());
 create policy work_items_update on public.work_items for update using (workspace_id = auth.uid()) with check (workspace_id = auth.uid());
 create policy work_items_delete on public.work_items for delete using (workspace_id = auth.uid());
+
+drop policy if exists subjects_select on public.subjects;
+drop policy if exists subjects_insert on public.subjects;
+drop policy if exists subjects_update on public.subjects;
+drop policy if exists subjects_delete on public.subjects;
+create policy subjects_select on public.subjects for select using (workspace_id = auth.uid());
+create policy subjects_insert on public.subjects for insert with check (workspace_id = auth.uid());
+create policy subjects_update on public.subjects for update using (workspace_id = auth.uid()) with check (workspace_id = auth.uid());
+create policy subjects_delete on public.subjects for delete using (workspace_id = auth.uid());
 
 drop policy if exists habits_select on public.habits;
 drop policy if exists habits_insert on public.habits;
