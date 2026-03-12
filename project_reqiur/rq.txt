@@ -1,0 +1,99 @@
+#การเชื่อมต่อ
+/repo : github
+/auth : Google Oauth
+/host : vercel
+/databse : supabase
+# =============================================================================
+# SUPABASE DATABASE & AUTHENTICATION
+# =============================================================================
+# 🔗 ไปที่: https://supabase.com/dashboard/project/ebkioaotqtrlnhdkrupb/settings/api
+# 
+# 1️⃣ Project URL - ใส่ URL ของ project
+NEXT_PUBLIC_SUPABASE_URL=https://ebkioaotqtrlnhdkrupb.supabase.co
+
+# 2️⃣ Anon/Public Key - คัดลอกจาก "Project API keys" → "anon public"
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+
+# 3️⃣ Service Role Key - คัดลอกจาก "Project API keys" → "service_role" (ใช้สำหรับ API routes)
+# ⚠️ ต้องใส่! ไม่งั้น auto-create habits จะไม่ทำงาน
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+
+
+# =============================================================================
+# GOOGLE OAUTH & CALENDAR API
+# =============================================================================
+# 🔗 ไปที่: https://console.cloud.google.com/apis/credentials
+# 
+# 1️⃣ สร้าง OAuth 2.0 Client ID (หรือใช้ของเดิม)
+# 2️⃣ เพิ่ม Authorized redirect URIs:
+#    - http://localhost:3000/auth/callback
+#    - https://YOUR_DOMAIN.vercel.app/auth/callback (ถ้า deploy แล้ว)
+# 
+# 3️⃣ ใส่ Client ID และ Secret ด้านล่าง:
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+
+# 4️⃣ ต้องเปิด APIs ใน Google Cloud Console:
+#    - Google Calendar API
+#    - Google People API (สำหรับ profile)
+
+
+# =============================================================================
+# RESEND EMAIL SERVICE (สำหรับส่งอีเมลแจ้งเตือน)
+# =============================================================================
+# 🔗 ไปที่: https://resend.com/api-keys
+# 
+# 1️⃣ สร้าง API Key ใหม่ (ขึ้นต้น re_)
+# 2️⃣ Verify domain ของคุณก่อนส่งอีเมลจริง (หรือใช้ test mode)
+RESEND_API_KEY=YOUR_RESEND_API_KEY
+
+
+# =============================================================================
+# SUPABASE GOOGLE OAUTH SETUP (สำหรับ Login with Google)
+# =============================================================================
+# ⚙️ ตั้งค่าใน Supabase Dashboard:
+# 🔗 https://supabase.com/dashboard/project/ebkioaotqtrlnhdkrupb/auth/providers
+# 
+# 1️⃣ เปิด "Google" provider
+# 2️⃣ ใส่ Client ID และ Secret เหมือนด้านบน
+# 3️⃣ เพิ่ม Scopes (ในช่อง Additional Scopes):
+#    - https://www.googleapis.com/auth/calendar
+#    - https://www.googleapis.com/auth/calendar.events
+# 4️⃣ Redirect URL จะเป็น: https://ebkioaotqtrlnhdkrupb.supabase.co/auth/v1/callback
+
+
+# =============================================================================
+# APP CONFIGURATION
+# =============================================================================
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+
+
+# =============================================================================
+# OPTIONAL: WEATHER API (ใช้ Open-Meteo - ไม่ต้อง API key)
+# =============================================================================
+# ✅ Dashboard ดึงข้อมูลอากาศจาก Open-Meteo API (ฟรี, ไม่ต้องสมัคร)
+# 📍 Location: Bangkok (13.7563°N, 100.5018°E)
+
+
+อยากให้สร้างwebที่ใช้ในการtracking สิ่งต่างๆในชีวิตประจำวันสามารถใช้ได้ทั้ง pc iPhone ipad 
+animationเอาเท่าที่จำเป็นพอสวยไม่แข็งเกินไป
+uxuiให้ใช้ของui.shadcn
+themeเป็นขาวสลับดำได้
+ตัวอักษรใช้เป็นขาวดำแต่ข้างในที่เป็นข้อมูลต่างๆสามารถใส่สีที่โดดเด่นได้ที่ตัวอักษรและอาจจะมีlabelในการตกแต่งตรงคำหมวดหมู่ต่างๆ
+โครงสร้าง
+side bar
+1.มีหน้าloginเหมือนนเดิมที่สามารถlogin ได้ทั้งในgoogleและผ่านusername
+2.หน้าการใช้งานหลักlog in เป็นหน้าdashboardเป็นหน้าwelcomeที่สรุปประสิทธิภาพการทำงานให้ตามเป้าหมายของเรารวมถึงข้อมูลอื่นๆได้ก็ดีว่าเช่นสภาพอากาศหรือวันสำคัญ
+-dash boardที่สามารถสรุป สร้างแก้ไขข้อมูลต่างๆได้ให้อิงจากรูปnotionโดยมีตารางที่ดึงข้อมูลบางส่วนที่สำคัญในวันนั้นๆหรือtask projectที่ค้างอยู่แยกเป็นตารางของเรื่องนั้นๆมีปฎิทินที่แสดงข้อมูลรายเดือนถ้าสามารถปรับหรือเลื่อนได้ก็ดีรวมถึงแก้ไขข้อมูลในปฎิทินแล้วsyceกับทั้งหมด
+-habbit trackingเป็นตารางติ้กto-do list แบบรายวันโดยจะสร้างtaskแบบautoทุกวันว่าต้องทำอะไรบ้างเช่นตื่นเช้า ทาครีม ออกกำลังการ ดื่มน้ำ ทำงาน เล่นเกม คุยกับแฟน หรือ อื่นๆสามารถเพิ่มลดได้ว่าจะมีกิจวัจทำอะไรบ้าง
+-work เป็นหน้าการรวมงานหรือprojectที่ต้องทำสามารถเพิ่มลดได้มีวิชารวมถึงลักษณะงานรวมถึงข้อมูลอื่นๆที่ต้องใช้ในการทำ มีที่แปะlink piority และมีวันเริ่มและจบงาน
+-การเงิน เป็นหน้าที่เหมือนสรุปรายรับรายจ่ายมีสรุปเงินเข้าออกเป็นเดือนๆและแยกหมวดหมู่ได้ว่าเงินเข้ามาจากไหนและออกเสียในหมวดหมู่ไหน
+-calendarเป็นปฎิทินใหญ่ที่สามารถแก้ไขได้เช่นกัน
+ โดยข้อมูลที่เป็นตารางสามารถกดกรองหรือเรียงให้ได้ดูข้อมูลที่ต้องการได้
+แท็บด้านบน
+ -profile สามารถแก้ไขชื่อที่ให้แสดงและรูปprofileได้รวมถึงการแก้รหัสผ่านlog outหรืออื่น
+-notiที่แสดงการแจ้งเตือน
+-ปุ่มปรับตีมสว่างมืด
+
+โดยให้rebuildทั้งหมดอิงไว้แค่ส่วนที่เชื่อมต่อdatabaseหรือต้องการให้เพิ่มหรือแก้ตรงไหนที่อื่นก็บอกมาได้เลย
