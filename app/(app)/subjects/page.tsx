@@ -124,10 +124,12 @@ export default function SubjectsPage() {
     if (!hasSupabaseEnv) {
       if (selectedId) {
         setSubjects((current) => current.map((item) => (item.id === selectedId ? { ...item, ...payload } : item)));
+        toast.success("Subject updated");
       } else {
         setSubjects((current) => [{ id: crypto.randomUUID(), workspace_id: "demo-user", created_at: new Date().toISOString(), ...payload }, ...current]);
+        toast.success("Subject created");
+        resetForm();
       }
-      resetForm();
       return;
     }
 
@@ -138,8 +140,11 @@ export default function SubjectsPage() {
         : await supabase.from("subjects").insert(payload);
 
       if (response.error) throw response.error;
+      toast.success(selectedId ? "Subject updated" : "Subject created");
       await hydrate();
-      resetForm();
+      if (!selectedId) {
+        resetForm();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to save subject");
     }
@@ -193,45 +198,45 @@ export default function SubjectsPage() {
                 const completion = subject.homework_total ? Math.round((subject.homework_completed / subject.homework_total) * 100) : 0;
                 const relatedCount = workItems.filter((item) => item.subject_id === subject.id || item.subject === subject.name).length;
                 return (
-                  <button
-                    key={subject.id}
-                    type="button"
-                    onClick={() => pickSubject(subject)}
-                    className={cn(
-                      "rounded-[1.6rem] border p-4 text-left transition hover:border-primary/40 hover:bg-secondary/35",
-                      selectedId === subject.id ? "border-primary bg-secondary/60 shadow-panel" : "border-border/70 bg-background/75"
-                    )}
-                  >
-                    <div className="mb-4 flex items-start justify-between gap-3">
-                      <div>
-                        <div className={cn("mb-3 h-1.5 w-14 rounded-full", subject.color)} />
-                        <p className="font-semibold">{subject.name}</p>
-                        <p className="text-sm text-muted-foreground">{subject.code}</p>
+                  <div key={subject.id} className={cn(
+                    "rounded-[1.6rem] border transition",
+                    selectedId === subject.id ? "border-primary bg-secondary/60 shadow-panel" : "border-border/70 bg-background/75"
+                  )}>
+                    <button
+                      type="button"
+                      onClick={() => pickSubject(subject)}
+                      className="w-full p-4 text-left hover:bg-secondary/20 rounded-[1.5rem] rounded-b-none"
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-3">
+                        <div>
+                          <div className={cn("mb-3 h-1.5 w-14 rounded-full", subject.color)} />
+                          <p className="font-semibold">{subject.name}</p>
+                          <p className="text-sm text-muted-foreground">{subject.code}</p>
+                        </div>
+                        <Badge variant={subject.focus === "major" ? "accent" : subject.focus === "support" ? "warning" : "success"}>{subject.focus}</Badge>
                       </div>
-                      <Badge variant={subject.focus === "major" ? "accent" : subject.focus === "support" ? "warning" : "success"}>{subject.focus}</Badge>
-                    </div>
 
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <p>{subject.notes_count} notes taken</p>
-                      <p>{subject.homework_completed}/{subject.homework_total} homework completed</p>
-                      <p>{relatedCount} related work items</p>
-                    </div>
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <p>{subject.notes_count} notes taken</p>
+                        <p>{subject.homework_completed}/{subject.homework_total} homework completed</p>
+                        <p>{relatedCount} related work items</p>
+                      </div>
 
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
-                      <div className={cn("h-full rounded-full", subject.color)} style={{ width: `${completion}%` }} />
-                    </div>
+                      <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
+                        <div className={cn("h-full rounded-full", subject.color)} style={{ width: `${completion}%` }} />
+                      </div>
+                    </button>
 
-                    <div className="mt-3 flex items-center justify-end">
+                    <div className="border-t border-border/50 px-4 py-2">
                       <Link
                         href={`/subjects/${subject.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground"
+                        className="flex items-center justify-end gap-1 text-xs text-muted-foreground transition hover:text-foreground"
                       >
                         Open page
                         <ArrowUpRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>
