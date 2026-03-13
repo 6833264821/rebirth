@@ -42,8 +42,8 @@ const initialForm: SubjectForm = {
 };
 
 export default function SubjectsPage() {
-  const [subjects, setSubjects] = useState<Subject[]>(demoSubjects);
-  const [workItems, setWorkItems] = useState<WorkItem[]>(demoWorkItems);
+  const [subjects, setSubjects] = useState<Subject[]>(hasSupabaseEnv ? [] : demoSubjects);
+  const [workItems, setWorkItems] = useState<WorkItem[]>(hasSupabaseEnv ? [] : demoWorkItems);
   const [query, setQuery] = useState("");
   const [focusFilter, setFocusFilter] = useState<FocusFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -76,6 +76,13 @@ export default function SubjectsPage() {
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (subjects.some((subject) => subject.id === selectedId)) return;
+    setSelectedId(null);
+    setForm(initialForm);
+  }, [selectedId, subjects]);
 
   const filteredSubjects = useMemo(() => {
     return subjects.filter((subject) => {
@@ -136,10 +143,13 @@ export default function SubjectsPage() {
     try {
       const supabase = createClient();
       const response = selectedId
-        ? await supabase.from("subjects").update(payload).eq("id", selectedId)
-        : await supabase.from("subjects").insert(payload);
+        ? await supabase.from("subjects").update(payload).eq("id", selectedId).select("id").maybeSingle()
+        : await supabase.from("subjects").insert(payload).select("id").single();
 
       if (response.error) throw response.error;
+      if (selectedId && !response.data) {
+        throw new Error("Subject not found or you do not have permission to update it");
+      }
       toast.success(selectedId ? "Subject updated" : "Subject created");
       await hydrate();
       if (!selectedId) {
