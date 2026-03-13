@@ -220,6 +220,17 @@ export default function SubjectsPage() {
                     <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
                       <div className={cn("h-full rounded-full", subject.color)} style={{ width: `${completion}%` }} />
                     </div>
+
+                    <div className="mt-3 flex items-center justify-end">
+                      <Link
+                        href={`/subjects/${subject.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 text-xs text-muted-foreground transition hover:text-foreground"
+                      >
+                        Open page
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
                   </button>
                 );
               })}

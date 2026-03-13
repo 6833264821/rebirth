@@ -59,6 +59,7 @@ export default function WorkPage() {
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [view, setView] = useState<WorkDatabaseView>("table");
+  const [draggedId, setDraggedId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(demoWorkItems[0]?.id ?? null);
   const [month, setMonth] = useState(new Date());
   const [checklistInput, setChecklistInput] = useState("");
@@ -109,6 +110,19 @@ export default function WorkPage() {
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  // Persist + restore view preference
+  useEffect(() => {
+    const saved = localStorage.getItem("work-view");
+    if (saved === "table" || saved === "board" || saved === "calendar") {
+      setView(saved);
+    }
+  }, []);
+
+  const handleViewChange = useCallback((next: WorkDatabaseView) => {
+    setView(next);
+    localStorage.setItem("work-view", next);
+  }, []);
 
   const filtered = useMemo(() => {
     return items.filter((item) => {
@@ -294,15 +308,15 @@ export default function WorkPage() {
           <h1 className="text-3xl font-semibold">Work Database</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant={view === "table" ? "default" : "outline"} onClick={() => setView("table")}>
+          <Button type="button" variant={view === "table" ? "default" : "outline"} onClick={() => handleViewChange("table")}>
             <Table2 className="mr-2 h-4 w-4" />
             Table
           </Button>
-          <Button type="button" variant={view === "board" ? "default" : "outline"} onClick={() => setView("board")}>
+          <Button type="button" variant={view === "board" ? "default" : "outline"} onClick={() => handleViewChange("board")}>
             <LayoutGrid className="mr-2 h-4 w-4" />
             Board
           </Button>
-          <Button type="button" variant={view === "calendar" ? "default" : "outline"} onClick={() => setView("calendar")}>
+          <Button type="button" variant={view === "calendar" ? "default" : "outline"} onClick={() => handleViewChange("calendar")}>
             <CalendarDays className="mr-2 h-4 w-4" />
             Calendar
           </Button>
@@ -387,7 +401,23 @@ export default function WorkPage() {
             {view === "board" ? (
               <div className="grid gap-4 xl:grid-cols-3">
                 {boardColumns.map((column) => (
-                  <div key={column.status} className="rounded-[1.5rem] border border-border/70 bg-background/70 p-4">
+                  <div
+                    key={column.status}
+                    className={cn(
+                      "rounded-[1.5rem] border bg-background/70 p-4 transition-colors",
+                      draggedId ? "border-primary/40 bg-secondary/30" : "border-border/70"
+                    )}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (!draggedId) return;
+                      const dragged = items.find((i) => i.id === draggedId);
+                      if (dragged && dragged.status !== column.status) {
+                        void updateStatus(draggedId, column.status);
+                      }
+                      setDraggedId(null);
+                    }}
+                  >
                     <div className="mb-3 flex items-center justify-between">
                       <div>
                         <p className="font-medium capitalize">{column.status}</p>
@@ -397,7 +427,19 @@ export default function WorkPage() {
                     </div>
                     <div className="space-y-3">
                       {column.items.map((item) => (
-                        <button key={item.id} type="button" onClick={() => pickItem(item)} className={cn("w-full rounded-2xl border p-4 text-left transition hover:border-primary/40", selectedId === item.id ? "border-primary bg-secondary/60" : "border-border/70 bg-background")}>
+                        <button
+                          key={item.id}
+                          type="button"
+                          draggable
+                          onClick={() => pickItem(item)}
+                          onDragStart={() => setDraggedId(item.id)}
+                          onDragEnd={() => setDraggedId(null)}
+                          className={cn(
+                            "w-full rounded-2xl border p-4 text-left transition hover:border-primary/40 cursor-grab active:cursor-grabbing",
+                            selectedId === item.id ? "border-primary bg-secondary/60" : "border-border/70 bg-background",
+                            draggedId === item.id && "opacity-50"
+                          )}
+                        >
                           <div className="flex items-start justify-between gap-2">
                             <p className="font-medium">{item.name}</p>
                             <Badge variant={item.priority === "high" ? "danger" : item.priority === "medium" ? "warning" : "default"}>{item.priority}</Badge>

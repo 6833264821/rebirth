@@ -8,39 +8,58 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { demoSubjects, demoWorkItems } from "@/lib/demo-data";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { WorkChecklistItem, WorkItem } from "@/lib/types";
+import type { Subject, WorkChecklistItem, WorkItem } from "@/lib/types";
 import { shortDate } from "@/lib/utils";
 
 type WorkDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-async function getWorkItem(id: string) {
-  if (!hasSupabaseEnv) {
-    return demoWorkItems.find((item) => item.id === id) ?? null;
+async function getWorkItemWithSubject(id: string): Promise<{ item: WorkItem | null; subject: Subject | null }> {
+  if (hasSupabaseEnv) {
+    try {
+      const supabase = await createServerSupabaseClient();
+      const { data: itemData, error } = await supabase
+        .from("work_items")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!error && itemData) {
+        const item = itemData as WorkItem;
+        let subject: Subject | null = null;
+
+        if (item.subject_id) {
+          const { data: subjectData } = await supabase
+            .from("subjects")
+            .select("*")
+            .eq("id", item.subject_id)
+            .single();
+          subject = (subjectData as Subject | null);
+        }
+
+        return { item, subject };
+      }
+    } catch {
+      // fall through to demo data
+    }
   }
 
-  try {
-    const supabase = await createServerSupabaseClient();
-    const { data, error } = await supabase.from("work_items").select("*").eq("id", id).single();
-    if (error) {
-      return demoWorkItems.find((item) => item.id === id) ?? null;
-    }
-    return data as WorkItem;
-  } catch {
-    return demoWorkItems.find((item) => item.id === id) ?? null;
-  }
+  const item = demoWorkItems.find((entry) => entry.id === id) ?? null;
+  const subject = item
+    ? (demoSubjects.find((s) => s.id === item.subject_id || s.name === item.subject) ?? null)
+    : null;
+  return { item, subject };
 }
 
 export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
   const { id } = await params;
-  const item = await getWorkItem(id);
+  const { item, subject } = await getWorkItemWithSubject(id);
 
   if (!item) {
     notFound();
   }
 
-  const subject = demoSubjects.find((entry) => entry.id === item.subject_id || entry.name === item.subject);
   const checklist = (item.checklist ?? []) as WorkChecklistItem[];
 
   return (
