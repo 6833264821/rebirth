@@ -53,17 +53,18 @@ const initialForm: WorkForm = {
 };
 
 export default function WorkPage() {
-  const [items, setItems] = useState<WorkItem[]>(demoWorkItems);
-  const [subjects, setSubjects] = useState<Subject[]>(demoSubjects);
+  const [items, setItems] = useState<WorkItem[]>(hasSupabaseEnv ? [] : demoWorkItems);
+  const [subjects, setSubjects] = useState<Subject[]>(hasSupabaseEnv ? [] : demoSubjects);
   const [query, setQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [view, setView] = useState<WorkDatabaseView>("table");
   const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(demoWorkItems[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(hasSupabaseEnv ? null : demoWorkItems[0]?.id ?? null);
   const [month, setMonth] = useState(new Date());
   const [checklistInput, setChecklistInput] = useState("");
   const [form, setForm] = useState<WorkForm>(() => {
+    if (hasSupabaseEnv) return initialForm;
     const first = demoWorkItems[0];
     return first
       ? {
@@ -110,6 +111,14 @@ export default function WorkPage() {
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    if (items.some((item) => item.id === selectedId)) return;
+    setSelectedId(null);
+    setChecklistInput("");
+    setForm(initialForm);
+  }, [items, selectedId]);
 
   // Persist + restore view preference
   useEffect(() => {
@@ -207,10 +216,13 @@ export default function WorkPage() {
     try {
       const supabase = createClient();
       const response = selectedId
-        ? await supabase.from("work_items").update(payload).eq("id", selectedId)
-        : await supabase.from("work_items").insert(payload);
+        ? await supabase.from("work_items").update(payload).eq("id", selectedId).select("id").maybeSingle()
+        : await supabase.from("work_items").insert(payload).select("id").single();
 
       if (response.error) throw response.error;
+      if (selectedId && !response.data) {
+        throw new Error("Work item not found or you do not have permission to update it");
+      }
       await hydrate();
       toast.success(selectedId ? "Work item updated" : "Work item created");
       if (!selectedId) {
