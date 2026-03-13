@@ -34,7 +34,7 @@ const initialForm: SubjectForm = {
   name: "",
   code: "",
   focus: "major",
-  color: "bg-sky-500",
+  color: "bg-zinc-500",
   notes_count: "0",
   homework_total: "0",
   homework_completed: "0",
@@ -286,10 +286,10 @@ export default function SubjectsPage() {
                 <option value="life">Life</option>
               </select>
               <select value={form.color} onChange={(event) => setForm((current) => ({ ...current, color: event.target.value }))} className="h-11 rounded-xl border border-border bg-background px-3 text-sm">
-                <option value="bg-sky-500">Blue</option>
-                <option value="bg-amber-500">Amber</option>
-                <option value="bg-emerald-500">Green</option>
-                <option value="bg-rose-500">Rose</option>
+                <option value="bg-zinc-500">Zinc</option>
+                <option value="bg-neutral-500">Neutral</option>
+                <option value="bg-stone-500">Stone</option>
+                <option value="bg-slate-500">Slate</option>
               </select>
             </div>
             <div className="grid gap-3 md:grid-cols-3">

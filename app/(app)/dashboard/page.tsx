@@ -120,7 +120,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Across projects and deadlines</span>
-            <ListTodo className="h-5 w-5 text-sky-500" />
+            <ListTodo className="h-5 w-5 text-zinc-400" />
           </CardContent>
         </Card>
         <Card>
